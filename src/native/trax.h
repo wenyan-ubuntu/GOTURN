@@ -51,6 +51,118 @@
 
 #define TRAX_LOCALHOST "127.0.0.1"
 
+/**
+    client      
+	    -- trax_client_setup_file
+        |
+        |
+        -- trax_client_setup_scoket
+        |
+	    |
+		-- trax_client_wait
+		|
+		|
+		-- trax_client_initialize
+		|
+		|
+		-- trax_client_frame
+	    |
+		|
+	server		
+	    -- trax_server_setup
+		|
+		|
+		-- trax_server_setup_file
+        |
+		|
+		-- trax_server_wait
+		|   
+		|
+		-- trax_server_rely
+		|
+		|
+	client and server
+        -- trax_cleanup
+        |
+        |
+        -- trax_set_parameter
+        |
+        |
+        -- trax_get_parameter
+        |
+        |
+	image
+        -- trax_image_release
+        |
+        |		
+        -- trax_image_creat_path
+		|
+		|
+		-- trax_image_get_path
+        |
+        |
+    region 
+        -- trax_region_release
+        |
+        |
+        -- trax_region_get_type
+        |
+        |
+        --trax_region_create_special
+        |
+        |
+        -- trax_region_set_special	
+        |
+		| 
+		-- trax_region_get_special
+		|
+		|
+	rectangle
+		-- trax_region_create_rectangle
+		|
+		| 
+		-- trax_region_set_rectangel
+		|
+		|
+		-- trax_region_get_rectangle
+		|
+		|
+	polygon
+	    -- trax_region_creat_polygon
+		|
+		|
+		-- trax_region_get_polygon_point
+		|
+		|
+		-- trax_region_set_polygon_point
+		|
+		|
+		-- trax_region_get_polygon_count
+		|
+		|
+	bounds
+	    -- trax_region_get_bounds
+	    |
+		|
+	properties
+	    -- trax_properties_release
+		|
+		|
+		-- trax_properties_clear
+		|
+		|
+		-- trax_properties_creat
+		|
+		|
+		-- trax_properties_set
+		|
+		|
+		-- trax_properties_get
+		|
+		|
+		-- trax_properties_enumerate
+			
+**/
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -111,6 +223,11 @@ __TRAX_EXPORT const char* trax_varsion();
 __TRAX_EXPORT trax_handle* trax_client_setup_file(int input, int output, FILE* log);
 
 /**
+ * Setups the protocol state object for the client and returns a handle object.
+**/
+__TRAX_EXPORT trax_handle* trax_client_setup_socket(int server, FILE* log);
+
+/**
  * Setup the protocol state object for the client and returns a handle object.
  **/
 __TRAX_EXPORT int trax_client_wait(trax_handle* client, trax_region** region, trax_properties* properties);
@@ -134,6 +251,11 @@ __TRAX_EXPORT trax_handle* trax_server_setup(trax_configuration config, FILE* lo
  * Setup the protocol for the server side and returns a handle object
  **/
 __TRAX_EXPORT trax_handle* trax_server_setup(trax_configuration config, int input, int output, FILE* log);
+
+/**
+ * Setups the protocol for the server side and returns a handle object.
+**/
+__TRAX_EXPORT trax_handle* trax_server_setup_file(trax_configuration config, int input, int output, FILE* log);
 
 /**
  * Waits for a vaild protocol message from the client
@@ -202,9 +324,102 @@ __TRAX_EXPORT int trax_region_get_special(const trax_region* region);
  **/
 __TRAX_EXPORT trax_region* trax_region_creat_rectangle(float x, float y, float width, float height);
 
+/**
+ * Sets the coordinates for a rectangle region
+ **/
+ __TRAX_EXPORT void trax_region_set_rectangel(trax_region* region, float x, float y, float width, float height);
+ 
+ /**
+  * Retrieves coordinate from a rectangle region object
+  **/
+__TRAX_EXPORT void trax_region_get_rectangle(const trax_region* region, float *x, float *y, float *width, float *height);
 
+/**
+ * Create a polygon region object for a given amout of points.
+ * Note that the coordinates of the points are arbitrary and have to be set after allocation
+ */
+__TRAX_EXPORT trax_region* trax_region_creat_polygon(int count);
 
+/**
+ * Sets coordinates of given point in the polygon
+ **/
+__TRAX_EXPORT void trax_region_set_polygon_point(trax_region* region, int index, float x, float y);
 
+/**
+ * Retrieves the coordinates of a specific point in the polygon
+ **/
+__TRAX_EXPORT void trax_region_get_polygon_point(const trax_region* region, int index, float* x float* y);
+
+/**
+ * Returns the number of points in the polygon.
+ **/
+__TRAX_EXPORT int trax_region_get_polygon_count(const trax_region* region);
+
+/** 
+ * Creates a rectangle region object that bounds the input region (in case the input
+ * region is also a rectangle it just clones it).
+ **/
+__TRAX_EXPORT trax_region* trax_region_get_bounds(const trax_region* region);
+
+/**
+ * Destory a properties object and clean up the memory.
+ **/
+__TRAX_EXPORT void trax_properties_release(trax_properties** properties);
+
+/** 
+ * Clear a properties object/
+ **/
+__TRAX_EXPORT void trax_properties_clear(trax_properties* properties);
+
+/**
+ * Creat a property object.
+ **/
+__TRAX_EXPORT trax_properties* trax_properties_creat();
+
+/**
+ * Set a string property (the value string is cloned).
+ **/
+__TRAX_EXPORT void trax_properties_set(trax_properties* properties, const char* key, const char* value);
+
+/**
+ * Set an integer property. The vlaue will be encoded as a string.
+ **/
+__TRAX_EXPORT void trax_properties_set_int(trax_properties* properties, const char* key, int value);
+
+/**
+ * Set an floating point value property. The value will be encoded as a string.
+ **/
+__TRAX_EXPORT void trax_properties_set_float(trax_properties* properties, const char* key, float value);
+
+/**
+ * Get a string property. The resulting string is a clone of the one stored so it should
+ * be released when not needed anymore.
+ **/
+__TRAX_EXPORT char* trax_properties_get(const trax_properties* properties, const char* key);
+
+/**
+ * Get an integer property. A stored string value is converted to an integer. If this is not possible
+ * or the property does not exist a given default value is returned.
+ **/
+__TRAX_EXPORT int trax_properties_get_int(const trax_properties* properties, const char* key, int def);
+
+/**
+ * Get an floating point value property. A stored string value is converted to an integer. If this is not possible
+ * or the property does not exist a given default value is returned.
+ **/
+__TRAX_EXPORT float trax_properties_get_float(const trax_properties* properties, const char* key, float def);
+
+/**
+ * Iterate over the property set using a callback function, an optional pointer can be given and is forwarded
+ * to the callback
+ **/
+__TRAX_EXPORT void trax_properties_enumerate(trax_properties* properties, trax_enumerator enumerator, void* object);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif
 
 
 
