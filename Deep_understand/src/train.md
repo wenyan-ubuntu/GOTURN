@@ -173,8 +173,34 @@ void train_video(const std::vector<Video>& videos, TrackerTrainer* tracker_train
 		       // creating an apparent translation and scale changeof the target object
 		       MakeTrainingExampleBBShift(&image_rand_focus, &target_pad, &bbox_gt_scaled);
             }
+	
+	9.3 void TrackerTrainer::Train(const cv::Mat& image_prev, const cv::Mat& image_curr,
+                           const BoundingBox& bbox_prev, const BoundingBox& bbox_curr)
 
+    9.4 void RegressorTrain::Train(const std::vector<cv::Mat>& images,
+						   const std::vector<cv::Mat>& targets,
+						   const std::vector<BoundingBox>& bboxes_gt) 
+		{
+	         assert(net_->phase() == caffe::TRAIN);
+	
+	         if (images.size() != targets.size()) {
+		        printf("Error - %zu images but %zu targets\n", images.size(), targets.size());
+	         }
+	
+	         if (images.size() != bboxes_gt.size()) {
+		        printf("Error - %zu images but %zu bboxes_gt", images.size(), bboxes_gt.size());
+	         }
+	
+	         // Normally to track we just estimate the bbox location; if we need to backprop,
+             // we also need to input the ground-truth bounding boxes.
+             set_bboxes_gt(bboxes_gt);
+	
+         	// Set the image and target.
+	        SetImages(images, targets);
 
+            // Train the network.
+	        Step();
+    }
 
 
 
